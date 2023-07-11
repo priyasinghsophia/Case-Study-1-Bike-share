@@ -1,0 +1,40 @@
+
+# Case Study 1: 
+
+How Does a Bike-Share Navigate Speedy Success?
+
+## Ask
+
+### Business Task :
+
+To increase the company's growth and revenue, company is looking for maximizing the number of annual memberships. 
+
+### Description of all the data scources used: 
+
+Cyclistic’s historical trip data is used to analyze and identify trends. Data can be found here <https://divvy-tripdata.s3.amazonaws.com/index.html>
+
+### Are there issues with the bias or credibility in this data : 
+
+Since this data is based out of Chicago, this can cause population bias. Chicago has harsh winters and users might nit be using bikes and cycles that frequently.
+
+### How are you addressing licensing, privacy, security and accessbility: 
+
+The data is publicly available on amazon aws. The data has been made available by
+Motivate International Inc. under this license.)
+
+### How did you verify the data integrity: 
+
+Data integrity is verified by checking if any data of any month is missing or a certain column is missing in the historical data.
+
+### How does it help to answer your question : 
+
+By analyzing historical data, we can see patterns across data and we make assumptions out of it
+
+### Are there any problems with the data: 
+
+## Process
+
+### What tools are you using and why?
+
+Combination of R and Tableau is used in this case study. These tools are helpful in visualizing data and creating dashboards.
+
