@@ -1,0 +1,180 @@
+---
+title: 'Case Study 1 : Bike Share analysis'
+output:
+  html_document:
+    toc: true
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+library(readxl)
+library(lubridate)
+library(tidyverse)
+library(ggplot2)
+library(hms)
+library(skimr)
+library(janitor)
+library(dplyr)
+```
+
+# Case Study 1:
+
+How Does a Bike-Share Navigate Speedy Success?
+
+## Ask
+
+### Business Task :
+
+To increase the company's growth and revenue, company is looking for maximizing the number of annual memberships.
+
+### Description of all the data scources used:
+
+Cyclistic's historical trip data is used to analyze and identify trends. Data can be found here <https://divvy-tripdata.s3.amazonaws.com/index.html>
+
+### Are there issues with the bias or credibility in this data :
+
+Since this data is based out of Chicago, this can cause population bias. Chicago has harsh winters and users might nit be using bikes and cycles that frequently.
+
+### How are you addressing licensing, privacy, security and accessbility:
+
+The data is publicly available on amazon aws. The data has been made available by Motivate International Inc. under this license.)
+
+### How did you verify the data integrity:
+
+Data integrity is verified by checking if any data of any month is missing or a certain column is missing in the historical data.
+
+### How does it help to answer your question :
+
+By analyzing historical data, we can see patterns across data and we make assumptions out of it
+
+### Are there any problems with the data:
+
+The data looks good so far in terms of analysis
+
+## Process
+
+### What tools are you using and why?
+
+Combination of R and Tableau is used in this case study. These tools are helpful in visualizing data and creating dashboards.The data is first processed and then we will be analyzing the data. The data is extracted from zip files and added into a new folder. We have imported the data into R and merge these excel files together to analyze the data for all months of 2022 and 2023.
+
+```{r}
+setwd("~/Cyclist Trip Data")
+X202112_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202112-divvy-tripdata.csv")
+X202201_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202201-divvy-tripdata.csv")
+X202202_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202202-divvy-tripdata.csv")
+X202203_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202203-divvy-tripdata.csv")
+X202204_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202204-divvy-tripdata.csv")
+X202205_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202205-divvy-tripdata.csv")
+X202206_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202206-divvy-tripdata.csv")
+X202207_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202207-divvy-tripdata.csv")
+X202208_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202208-divvy-tripdata.csv")
+X202209_divvy_publictripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202209-divvy-publictripdata.csv")
+X202210_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202210-divvy-tripdata.csv")
+X202211_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202211-divvy-tripdata.csv")
+X202212_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202212-divvy-tripdata.csv")
+X202301_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202301-divvy-tripdata.csv")
+X202302_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202302-divvy-tripdata.csv")
+X202303_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202303-divvy-tripdata.csv")
+X202304_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202304-divvy-tripdata.csv")
+X202305_divvy_tripdata <- read_csv("C:/Users/God/Documents/Cyclist Trip Data/202305-divvy-tripdata.csv")
+
+Bike_Trips_Historical <- rbind(X202201_divvy_tripdata,X202112_divvy_tripdata,X202202_divvy_tripdata,X202203_divvy_tripdata,X202204_divvy_tripdata,X202205_divvy_tripdata,X202206_divvy_tripdata,X202207_divvy_tripdata,X202208_divvy_tripdata,X202209_divvy_publictripdata,X202210_divvy_tripdata,X202211_divvy_tripdata,X202212_divvy_tripdata,X202301_divvy_tripdata,X202302_divvy_tripdata,X202303_divvy_tripdata,X202304_divvy_tripdata,X202305_divvy_tripdata)
+```
+
+
+1. Calculate the ride length
+
+```{r}
+Bike_Trips_Historical$ride_length <- difftime(Bike_Trips_Historical$ended_at, Bike_Trips_Historical$started_at, units = "mins")
+```
+
+2. Create columns for: day of week, month, day, year, time, hour
+
+```{r}
+Bike_Trips_Historical$date <- as.Date(Bike_Trips_Historical$started_at) #default format is yyyy-mm-dd, use start date
+Bike_Trips_Historical$day_of_week <- wday(Bike_Trips_Historical$started_at) #calculate the day of the week 
+Bike_Trips_Historical$day_of_week <- format(as.Date(Bike_Trips_Historical$date), "%A") #create column for day of week
+Bike_Trips_Historical$month <- format(as.Date(Bike_Trips_Historical$date), "%m")#create column for month
+Bike_Trips_Historical$day <- format(as.Date(Bike_Trips_Historical$date), "%d") #create column for day
+Bike_Trips_Historical$year <- format(as.Date(Bike_Trips_Historical$date), "%Y") #create column for year
+Bike_Trips_Historical$time <- format(as.Date(Bike_Trips_Historical$date), "%H:%M:%S") #format time as HH:MM:SS
+Bike_Trips_Historical$time <- as_hms((Bike_Trips_Historical$started_at)) #create new column for time
+Bike_Trips_Historical$hour <- hour(Bike_Trips_Historical$time) #create new column for hour
+```
+3. Adding season columns based on the month column we added
+
+```{r}
+Bike_Trips_Historical <-Bike_Trips_Historical %>% mutate(season = 
+                                             case_when(month == "03" ~ "Spring",
+                                                       month == "04" ~ "Spring",
+                                                       month == "05" ~ "Spring",
+                                                       month == "06"  ~ "Summer",
+                                                       month == "07"  ~ "Summer",
+                                                       month == "08"  ~ "Summer",
+                                                       month == "09" ~ "Fall",
+                                                       month == "10" ~ "Fall",
+                                                       month == "11" ~ "Fall",
+                                                       month == "12" ~ "Winter",
+                                                       month == "01" ~ "Winter",
+                                                       month == "02" ~ "Winter")
+)
+
+
+#create column for different time_of_day: Night, Morning, Afternoon, Evening
+Bike_Trips_Historical <-Bike_Trips_Historical %>% mutate(time_of_day = 
+                                             case_when(hour == "0" ~ "Night",
+                                                       hour == "1" ~ "Night",
+                                                       hour == "2" ~ "Night",
+                                                       hour == "3" ~ "Night",
+                                                       hour == "4" ~ "Night",
+                                                       hour == "5" ~ "Night",
+                                                       hour == "6" ~ "Morning",
+                                                       hour == "7" ~ "Morning",
+                                                       hour == "8" ~ "Morning",
+                                                       hour == "9" ~ "Morning",
+                                                       hour == "10" ~ "Morning",
+                                                       hour == "11" ~ "Morning",
+                                                       hour == "12" ~ "Afternoon",
+                                                       hour == "13" ~ "Afternoon",
+                                                       hour == "14" ~ "Afternoon",
+                                                       hour == "15" ~ "Afternoon",
+                                                       hour == "16" ~ "Afternoon",
+                                                       hour == "17" ~ "Afternoon",
+                                                       hour == "18" ~ "Evening",
+                                                       hour == "19" ~ "Evening",
+                                                       hour == "20" ~ "Evening",
+                                                       hour == "21" ~ "Evening",
+                                                       hour == "22" ~ "Evening",
+                                                       hour == "23" ~ "Evening"))
+```
+
+## Analyze 
+
+1. Cleaning the data by removing na values and removing distinct values.
+
+```{r}
+
+Bike_Trips_Historical <- na.omit(Bike_Trips_Historical)
+Bike_Trips_Historical <- distinct(Bike_Trips_Historical) 
+Bike_Trips_Historical <- Bike_Trips_Historical[!(Bike_Trips_Historical$ride_length <=0),]
+clean_names(Bike_Trips_Historical)
+```
+
+2. Descriptive summary of the data set
+
+```{r}
+skim_without_charts(Bike_Trips_Historical)
+summary(Bike_Trips_Historical)
+glimpse(Bike_Trips_Historical)
+```
+3. Calculate the mean of ride_length
+
+```{r}
+Bike_Trips_Historical %>% mean(Bike_Trips_Historical$ride_length)
+```
+
